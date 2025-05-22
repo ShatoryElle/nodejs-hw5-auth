@@ -7,8 +7,8 @@ import createHttpError from 'http-errors';
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access-secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
 
-const ACCESS_TOKEN_EXPIRATION = '15m'; // або 15 хвилин
-const REFRESH_TOKEN_EXPIRATION = '7d'; // або 7 днів
+const ACCESS_TOKEN_EXPIRATION = '15m';
+const REFRESH_TOKEN_EXPIRATION = '7d';
 
 export async function registerUser({ name, email, password }) {
   const existingUser = await User.findOne({ email });
@@ -26,7 +26,31 @@ export async function registerUser({ name, email, password }) {
 
   await user.save();
 
-  return user;
+  const accessToken = jwt.sign({ id: user._id }, JWT_ACCESS_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
+  });
+
+  const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRATION,
+  });
+
+  const accessTokenValidUntil = new Date(Date.now() + 15 * 60 * 1000);
+  const refreshTokenValidUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+  const session = await Session.create({
+    userId: user._id,
+    accessToken,
+    refreshToken,
+    accessTokenValidUntil,
+    refreshTokenValidUntil,
+  });
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+    sessionId: session._id,
+  };
 }
 
 export async function loginUser(email, password) {
@@ -50,12 +74,12 @@ export async function loginUser(email, password) {
     expiresIn: REFRESH_TOKEN_EXPIRATION,
   });
 
-  const accessTokenValidUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 хвилин
-  const refreshTokenValidUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 днів
+  const accessTokenValidUntil = new Date(Date.now() + 15 * 60 * 1000);
+  const refreshTokenValidUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   await Session.deleteMany({ userId: user._id });
 
-  await Session.create({
+  const session = await Session.create({
     userId: user._id,
     accessToken,
     refreshToken,
@@ -66,14 +90,15 @@ export async function loginUser(email, password) {
   return {
     accessToken,
     refreshToken,
+    sessionId: session._id,
   };
 }
 
-export async function logoutUser(refreshToken) {
-  const session = await Session.findOne({ refreshToken });
+export async function logoutUser(sessionId) {
+  const session = await Session.findById(sessionId);
 
   if (!session) {
-    throw createHttpError(401, 'Invalid refresh token');
+    throw createHttpError(401, 'Invalid session ID');
   }
 
   await Session.findByIdAndDelete(session._id);
@@ -88,7 +113,6 @@ export async function refreshTokens(refreshToken) {
   try {
     payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
   } catch {
-    // не оголошуємо err, щоб уникнути ESLint no-unused-vars
     throw createHttpError(401, 'Invalid refresh token');
   }
 
@@ -126,5 +150,6 @@ export async function refreshTokens(refreshToken) {
   return {
     accessToken: newAccessToken,
     refreshToken: newRefreshToken,
+    sessionId: session._id,
   };
 }

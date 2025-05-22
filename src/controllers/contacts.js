@@ -8,11 +8,25 @@ import {
 } from '../services/contacts.js';
 
 export const getContactsController = async (req, res) => {
-  const contacts = await getAllContacts(req.user.id);
+  const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+  const userId = req.user.id;
+
+  const result = await getAllContacts(userId, {
+    page: Number(page),
+    limit: Number(limit),
+    sortBy,
+    sortOrder,
+  });
+
   res.status(200).json({
-    status: 200,
-    message: 'Successfully found contacts!',
-    data: contacts,
+    status: 'success',
+    code: 200,
+    data: {
+      contacts: result.contacts,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+    },
   });
 };
 
@@ -25,14 +39,14 @@ export const getContactByIdController = async (req, res) => {
   }
 
   res.status(200).json({
-    status: 200,
-    message: `Successfully found contact with id ${contactId}!`,
+    status: 'success',
+    code: 200,
     data: contact,
   });
 };
 
 export const createContactController = async (req, res) => {
-  const { name, phoneNumber, email, isFavorite, contactType } = req.body;
+  const { name, phoneNumber, email, isFavourite, contactType } = req.body;
 
   if (!name || !phoneNumber || !contactType) {
     throw createHttpError(
@@ -45,14 +59,14 @@ export const createContactController = async (req, res) => {
     name,
     phoneNumber,
     email,
-    isFavorite,
+    isFavourite,
     contactType,
     userId: req.user.id,
   });
 
   res.status(201).json({
-    status: 201,
-    message: 'Successfully created a contact!',
+    status: 'success',
+    code: 201,
     data: newContact,
   });
 };
@@ -66,8 +80,8 @@ export const patchContactController = async (req, res) => {
   }
 
   res.status(200).json({
-    status: 200,
-    message: 'Successfully patched a contact!',
+    status: 'success',
+    code: 200,
     data: updatedContact,
   });
 };

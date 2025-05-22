@@ -1,7 +1,20 @@
 import Contact from '../db/models/contact.js';
 
-export const getAllContacts = async (userId) => {
-  return await Contact.find({ userId });
+export const getAllContacts = async (userId, { page, limit, sortBy, sortOrder }) => {
+  const skip = (page - 1) * limit;
+  const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+
+  const [contacts, total] = await Promise.all([
+    Contact.find({ userId }).sort(sort).skip(skip).limit(limit),
+    Contact.countDocuments({ userId }),
+  ]);
+
+  return {
+    contacts,
+    total,
+    page,
+    limit,
+  };
 };
 
 export const getContactById = async (contactId, userId) => {
