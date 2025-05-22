@@ -11,7 +11,7 @@ import authenticate from '../middlewares/authenticate.js';
 
 const router = express.Router();
 
-router.use(authenticate); // захист усіх контактів
+router.use(authenticate); 
 
 router.get('/', ctrlWrapper(getContactsController));
 router.get('/:contactId', ctrlWrapper(getContactByIdController));

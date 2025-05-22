@@ -9,13 +9,13 @@ export default async function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      throw createHttpError(401, 'No authorization header');
+      throw createHttpError(401, 'Authorization header is missing');
     }
 
     const [bearer, token] = authHeader.split(' ');
 
     if (bearer !== 'Bearer' || !token) {
-      throw createHttpError(401, 'Invalid authorization header format');
+      throw createHttpError(401, 'Invalid authorization format');
     }
 
     let payload;
@@ -24,22 +24,24 @@ export default async function authenticate(req, res, next) {
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
         throw createHttpError(401, 'Access token expired');
-      } else {
-        throw createHttpError(401, 'Invalid access token');
       }
+      throw createHttpError(401, 'Invalid access token');
     }
 
     const session = await Session.findOne({ accessToken: token });
 
     if (!session) {
-      throw createHttpError(401, 'Session not found or invalid token');
+      throw createHttpError(401, 'Session not found or token not valid');
     }
 
     if (session.accessTokenValidUntil < new Date()) {
       throw createHttpError(401, 'Access token expired');
     }
 
-    req.user = { id: payload.id };
+    req.user = {
+      id: payload.id,
+      sessionId: session._id,
+    };
 
     next();
   } catch (error) {
