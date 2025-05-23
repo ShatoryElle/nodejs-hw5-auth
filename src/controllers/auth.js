@@ -8,7 +8,7 @@ import {
 export const registerController = async (req, res) => {
   const { name, email, password } = req.body;
 
-  const { user, accessToken, refreshToken, sessionId } = await registerUser({
+  const { user, refreshToken, sessionId } = await registerUser({
     name,
     email,
     password,
@@ -30,15 +30,13 @@ export const registerController = async (req, res) => {
 
   res.status(201).json({
     status: 'success',
-    code: 201,
+    message: 'User registered successfully',
     data: {
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
       },
-      accessToken,
-      sessionId,
     },
   });
 };
@@ -67,7 +65,7 @@ export const loginController = async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    code: 200,
+    message: 'Login successful',
     data: {
       accessToken,
       sessionId,
@@ -81,8 +79,8 @@ export const logoutController = async (req, res) => {
   if (!sessionId) {
     return res.status(400).json({
       status: 'error',
-      code: 400,
       message: 'Session ID is missing',
+      data: null,
     });
   }
 
@@ -91,7 +89,11 @@ export const logoutController = async (req, res) => {
   res.clearCookie('refreshToken');
   res.clearCookie('sessionId');
 
-  res.status(204).send();
+  res.status(200).json({
+    status: 'success',
+    message: 'Logout successful',
+    data: null,
+  });
 };
 
 export const refreshController = async (req, res) => {
@@ -116,7 +118,7 @@ export const refreshController = async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    code: 200,
+    message: 'Token refreshed',
     data: {
       accessToken,
       sessionId,
