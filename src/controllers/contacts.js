@@ -20,7 +20,7 @@ export const getContactsController = async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    code: 200,
+    message: 'Contacts fetched successfully',
     data: {
       contacts: result.contacts,
       total: result.total,
@@ -40,7 +40,7 @@ export const getContactByIdController = async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    code: 200,
+    message: 'Contact found',
     data: contact,
   });
 };
@@ -66,7 +66,7 @@ export const createContactController = async (req, res) => {
 
   res.status(201).json({
     status: 'success',
-    code: 201,
+    message: 'Contact created successfully',
     data: newContact,
   });
 };
@@ -81,7 +81,7 @@ export const patchContactController = async (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    code: 200,
+    message: 'Contact updated successfully',
     data: updatedContact,
   });
 };
@@ -94,5 +94,9 @@ export const deleteContactController = async (req, res) => {
     throw createHttpError(404, 'Contact not found');
   }
 
-  res.status(204).send();
+  res.status(200).json({
+    status: 'success',
+    message: 'Contact deleted successfully',
+    data: null,
+  });
 };
