@@ -1,38 +1,35 @@
 import mongoose from 'mongoose';
 
+const {
+  MONGO_DB_NAME,
+  MONGO_USER,
+  MONGO_PASSWORD,
+  MONGO_CLUSTER
+} = process.env;
+
 export const initMongoConnection = async () => {
   try {
-    const { MONGODB_USER, MONGODB_PASSWORD, MONGODB_URL, MONGODB_DB } =
-      process.env;
-
-    if (!MONGODB_USER || !MONGODB_PASSWORD || !MONGODB_URL || !MONGODB_DB) {
-      throw new Error(
-        'Одна або декілька змінних оточення MongoDB не визначені',
-      );
+   
+    if (!MONGO_DB_NAME || !MONGO_USER || !MONGO_PASSWORD || !MONGO_CLUSTER) {
+      console.error('❌ ENV Check Failed:', {
+        MONGO_DB_NAME,
+        MONGO_USER,
+        MONGO_PASSWORD,
+        MONGO_CLUSTER,
+      });
+      throw new Error('Одна або декілька змінних оточення MongoDB не визначені');
     }
 
-    const connectionString = `mongodb+srv://${encodeURIComponent(
-      MONGODB_USER,
-    )}:${encodeURIComponent(
-      MONGODB_PASSWORD,
-    )}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
+    const uri = `mongodb+srv://${encodeURIComponent(MONGO_USER)}:${encodeURIComponent(MONGO_PASSWORD)}@${MONGO_CLUSTER}/${MONGO_DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
 
-    mongoose.set('strictQuery', true); 
-    mongoose.set('bufferCommands', false); 
-
-    await mongoose.connect(connectionString);
-
-    console.log('✅ Mongo connection successfully established!');
-
-    mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️ MongoDB disconnected!');
+    await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
 
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err.message);
-    });
+    console.log('✅ Connected to MongoDB');
   } catch (error) {
     console.error('❌ Error connecting to MongoDB:', error.message);
-    process.exit(1);
+    process.exit(1); 
   }
 };
