@@ -9,7 +9,6 @@ import {
   removeContact,
 } from '../services/contacts.js';
 
-// Валідаційні схеми
 const addContactSchema = Joi.object({
   name: Joi.string().min(3).max(50).required(),
   email: Joi.string().email().required(),
@@ -86,7 +85,6 @@ export const getContactByIdController = async (req, res) => {
 };
 
 export const addContactController = async (req, res) => {
-  // Валідація тіла запиту
   const { error } = addContactSchema.validate(req.body);
   if (error) {
     return res.status(400).json({
@@ -125,11 +123,7 @@ export const removeContactController = async (req, res) => {
     });
   }
 
-  res.status(200).json({
-    status: 200,
-    message: 'Contact deleted successfully',
-    data: null,
-  });
+  res.status(204).send();
 };
 
 export const updateContactController = async (req, res) => {
@@ -143,7 +137,6 @@ export const updateContactController = async (req, res) => {
     });
   }
 
-  // Валідація тіла запиту
   const { error } = updateContactSchema.validate(req.body);
   if (error) {
     return res.status(400).json({
@@ -179,7 +172,6 @@ export const updateStatusContactController = async (req, res) => {
     });
   }
 
-  // Валідація тіла запиту
   const { error } = updateStatusSchema.validate(req.body);
   if (error) {
     return res.status(400).json({
