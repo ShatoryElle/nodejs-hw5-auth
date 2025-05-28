@@ -28,15 +28,17 @@ export const registerController = async (req, res) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
+  const { _id, createdAt, updatedAt } = user;
+
   res.status(201).json({
-    status: 'success',
+    status: 201,
     message: 'User registered successfully',
     data: {
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      name,
+      email,
+      _id,
+      createdAt,
+      updatedAt,
     },
   });
 };
@@ -64,11 +66,10 @@ export const loginController = async (req, res) => {
   });
 
   res.status(200).json({
-    status: 'success',
+    status: 200,
     message: 'Login successful',
     data: {
       accessToken,
-      sessionId,
     },
   });
 };
@@ -78,7 +79,7 @@ export const logoutController = async (req, res) => {
 
   if (!sessionId) {
     return res.status(400).json({
-      status: 'error',
+      status: 400,
       message: 'Session ID is missing',
       data: null,
     });
@@ -89,11 +90,7 @@ export const logoutController = async (req, res) => {
   res.clearCookie('refreshToken');
   res.clearCookie('sessionId');
 
-  res.status(200).json({
-    status: 'success',
-    message: 'Logout successful',
-    data: null,
-  });
+  res.status(204).send();
 };
 
 export const refreshController = async (req, res) => {
@@ -117,11 +114,10 @@ export const refreshController = async (req, res) => {
   });
 
   res.status(200).json({
-    status: 'success',
+    status: 200,
     message: 'Token refreshed',
     data: {
       accessToken,
-      sessionId,
     },
   });
 };

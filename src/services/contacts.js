@@ -25,14 +25,22 @@ export const createContact = async (contactData) => {
   return Contact.create(contactData);
 };
 
-export const patchContact = async (contactId, userId, updateData) => {
+export const updateContact = async (contactId, userId, updateData) => {
   return Contact.findOneAndUpdate(
     { _id: contactId, userId },
     updateData,
-    { new: true, runValidators: true },
+    { new: true, runValidators: true }
   );
 };
 
-export const deleteContact = async (contactId, userId) => {
+export const updateStatusContact = async (contactId, userId, favorite) => {
+  return Contact.findOneAndUpdate(
+    { _id: contactId, userId },
+    { favorite },
+    { new: true, runValidators: true }
+  );
+};
+
+export const removeContact = async (contactId, userId) => {
   return Contact.findOneAndDelete({ _id: contactId, userId });
 };
