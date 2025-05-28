@@ -36,7 +36,7 @@ export const setupServer = async () => {
     }),
   );
 
-  app.use('/auth', authRouter);
+  app.use('/api/auth', authRouter);
   app.use('/contacts', contactsRouter);
 
   app.get('/', (req, res) => {
