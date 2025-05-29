@@ -6,118 +6,158 @@ import {
 } from '../services/auth.js';
 
 export const registerController = async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-  const { user, refreshToken, sessionId } = await registerUser({
-    name,
-    email,
-    password,
-  });
-
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.cookie('sessionId', sessionId, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  const { _id, createdAt, updatedAt } = user;
-
-  res.status(201).json({
-    status: 201,
-    message: 'User registered successfully',
-    data: {
+    const { user, refreshToken, sessionId } = await registerUser({
       name,
       email,
-      _id,
-      createdAt,
-      updatedAt,
-    },
-  });
-};
+      password,
+    });
 
-export const loginController = async (req, res) => {
-  const { email, password } = req.body;
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
-  const { accessToken, refreshToken, sessionId } = await loginUser(
-    email,
-    password
-  );
+    res.cookie('sessionId', sessionId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    const { _id, createdAt, updatedAt } = user;
 
-  res.cookie('sessionId', sessionId, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-
-  res.status(200).json({
-    status: 200,
-    message: 'Login successful',
-    data: {
-      accessToken,
-    },
-  });
-};
-
-export const logoutController = async (req, res) => {
-  const { sessionId } = req.cookies;
-
-  if (!sessionId) {
-    return res.status(400).json({
-      status: 400,
-      message: 'Session ID is missing',
+    res.status(201).json({
+      status: 201,
+      message: 'Successfully registered a user!',
+      data: {
+        name,
+        email,
+        _id,
+        createdAt,
+        updatedAt,
+      },
+    });
+  } catch (error) {
+    res.status(error.status || 500).json({
+      status: error.status || 500,
+      message: error.message || 'Internal server error',
       data: null,
     });
   }
+};
 
-  await logoutUser(sessionId);
+export const loginController = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  res.clearCookie('refreshToken');
-  res.clearCookie('sessionId');
+    const { accessToken, refreshToken, sessionId } = await loginUser(
+      email,
+      password
+    );
 
-  res.status(204).send();
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie('sessionId', sessionId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully logged in an user!',
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    res.status(error.status || 500).json({
+      status: error.status || 500,
+      message: error.message || 'Internal server error',
+      data: null,
+    });
+  }
+};
+
+export const logoutController = async (req, res) => {
+  try {
+    const { sessionId } = req.cookies;
+
+    if (!sessionId) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Session ID is missing',
+        data: null,
+      });
+    }
+
+    await logoutUser(sessionId);
+
+    res.clearCookie('refreshToken');
+    res.clearCookie('sessionId');
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(error.status || 500).json({
+      status: error.status || 500,
+      message: error.message || 'Internal server error',
+      data: null,
+    });
+  }
 };
 
 export const refreshController = async (req, res) => {
-  const { refreshToken } = req.cookies;
+  try {
+    const { refreshToken } = req.cookies;
 
-  const { accessToken, refreshToken: newRefreshToken, sessionId } =
-    await refreshTokens(refreshToken);
+    if (!refreshToken) {
+      return res.status(401).json({
+        status: 401,
+        message: 'Refresh token is missing',
+        data: null,
+      });
+    }
 
-  res.cookie('refreshToken', newRefreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    const { accessToken, refreshToken: newRefreshToken, sessionId } =
+      await refreshTokens(refreshToken);
 
-  res.cookie('sessionId', sessionId, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
-  res.status(200).json({
-    status: 200,
-    message: 'Token refreshed',
-    data: {
-      accessToken,
-    },
-  });
+    res.cookie('sessionId', sessionId, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: 'Successfully refreshed a session!',
+      data: {
+        accessToken,
+      },
+    });
+  } catch (error) {
+    res.status(error.status || 500).json({
+      status: error.status || 500,
+      message: error.message || 'Internal server error',
+      data: null,
+    });
+  }
 };

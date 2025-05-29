@@ -1,42 +1,43 @@
 import Contact from '../db/models/contact.js';
 
+
 export const getAllContacts = async (userId, { page, limit, sortBy, sortOrder }) => {
   const skip = (page - 1) * limit;
   const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
-  const [contacts, total] = await Promise.all([
+  const [contacts, totalItems] = await Promise.all([
     Contact.find({ userId }).sort(sort).skip(skip).limit(limit),
     Contact.countDocuments({ userId }),
   ]);
 
+  const totalPages = Math.ceil(totalItems / limit);
+
   return {
     contacts,
-    total,
-    page,
-    limit,
+    pagination: {
+      page,
+      perPage: limit,
+      totalItems,
+      totalPages,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < totalPages,
+    },
   };
 };
 
 export const getContactById = async (contactId, userId) => {
-  return Contact.findOne({ _id: contactId, userId });
+  const contact = await Contact.findOne({ _id: contactId, userId });
+  return contact;
 };
 
-export const createContact = async (contactData) => {
-  return Contact.create(contactData);
+export const createContact = async (contactData, userId) => {
+  return Contact.create({ ...contactData, userId });
 };
 
 export const updateContact = async (contactId, userId, updateData) => {
   return Contact.findOneAndUpdate(
     { _id: contactId, userId },
     updateData,
-    { new: true, runValidators: true }
-  );
-};
-
-export const updateStatusContact = async (contactId, userId, favorite) => {
-  return Contact.findOneAndUpdate(
-    { _id: contactId, userId },
-    { favorite },
     { new: true, runValidators: true }
   );
 };
