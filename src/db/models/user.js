@@ -10,14 +10,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       required: true,
+      match: [/^\S+@\S+\.\S+$/, 'Invalid email format'],
     },
     password: {
       type: String,
       required: true,
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
+
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
 const User = mongoose.model('User', userSchema);
 
