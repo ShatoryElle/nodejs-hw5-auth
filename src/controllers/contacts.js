@@ -25,7 +25,7 @@ export const getAllContactsController = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const perPage = parseInt(req.query.perPage) || 10;
 
-    const { contacts, pagination } = await contactsService.getAllContacts(userId, {
+    const  result = await contactsService.getAllContacts(userId, {
       page,
       limit: perPage,
       sortBy: 'createdAt',
@@ -33,10 +33,17 @@ export const getAllContactsController = async (req, res, next) => {
     });
 
     res.status(200).json({
-      status: 'success',
-      code: 200,
+      status: 200,
       message: 'Contacts fetched successfully',
-      data: { contacts, pagination },
+      data:  {
+        data: result.data,            
+        page: result.page,
+        perPage: result.perPage,
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+        hasPreviousPage: result.hasPreviousPage,
+        hasNextPage: result.hasNextPage,
+      },
     });
   } catch (err) {
     next(err);
@@ -57,8 +64,7 @@ export const getContactByIdController = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: 'success',
-      code: 200,
+      status: 200,
       message: 'Contact fetched successfully',
       data: contact,
     });
@@ -78,8 +84,7 @@ export const addContactController = async (req, res, next) => {
     const contact = await contactsService.createContact(req.body, userId);
 
     res.status(201).json({
-      status: 'success',
-      code: 201,
+      status: 201,
       message: 'Contact added successfully',
       data: contact,
     });
