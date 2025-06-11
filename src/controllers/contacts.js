@@ -36,7 +36,7 @@ export const getAllContactsController = async (req, res, next) => {
       status: 200,
       message: 'Contacts fetched successfully',
       data:  {
-        data: result.data,             // масив контактів
+        data: result.data,            
         page: result.page,
         perPage: result.perPage,
         totalItems: result.totalItems,
@@ -64,8 +64,7 @@ export const getContactByIdController = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: 'success',
-      code: 200,
+      status: 200,
       message: 'Contact fetched successfully',
       data: contact,
     });
@@ -85,8 +84,7 @@ export const addContactController = async (req, res, next) => {
     const contact = await contactsService.createContact(req.body, userId);
 
     res.status(201).json({
-      status: 'success',
-      code: 201,
+      status: 201,
       message: 'Contact added successfully',
       data: contact,
     });
