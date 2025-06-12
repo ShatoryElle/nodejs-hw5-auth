@@ -13,6 +13,7 @@ export const getAllContacts = async (userId, { page, limit, sortBy, sortOrder })
   const pagination = calculatePaginationData(totalItems, limit, page);
 
   return {
+
     data: contacts, // масив контактів під ключем `data`
     page: pagination.page,
     perPage: pagination.perPage,
