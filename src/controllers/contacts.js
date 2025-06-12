@@ -25,17 +25,17 @@ export const getAllContactsController = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const perPage = parseInt(req.query.perPage) || 10;
 
-    const { contacts} = await contactsService.getAllContacts(userId, {
+    const result = await contactsService.getAllContacts(userId, {
       page,
       limit: perPage,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     });
-    
+
     res.status(200).json({
       status: 200,
       message: "Contacts fetched successfully",
-      data: contacts,
+      data: result,
     });
   } catch (err) {
     next(err);
