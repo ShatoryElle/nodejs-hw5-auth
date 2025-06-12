@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import Joi from 'joi';
-import createHttpError from 'http-errors'; // ✅ додано
+import createHttpError from 'http-errors';
 import * as contactsService from '../services/contacts.js';
 
 const addContactSchema = Joi.object({
@@ -25,7 +25,7 @@ export const getAllContactsController = async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const perPage = parseInt(req.query.perPage) || 10;
 
-    const  result = await contactsService.getAllContacts(userId, {
+    const result = await contactsService.getAllContacts(userId, {
       page,
       limit: perPage,
       sortBy: 'createdAt',
@@ -34,16 +34,8 @@ export const getAllContactsController = async (req, res, next) => {
 
     res.status(200).json({
       status: 200,
-      message: 'Contacts fetched successfully',
-      data:  {
-        data: result.data,            
-        page: result.page,
-        perPage: result.perPage,
-        totalItems: result.totalItems,
-        totalPages: result.totalPages,
-        hasPreviousPage: result.hasPreviousPage,
-        hasNextPage: result.hasNextPage,
-      },
+      message: "Contacts fetched successfully",
+      data: result,  // result - масив контактів
     });
   } catch (err) {
     next(err);
@@ -112,8 +104,7 @@ export const updateContactController = async (req, res, next) => {
     }
 
     res.status(200).json({
-      status: 'success',
-      code: 200,
+      status: 200,
       message: 'Contact updated successfully',
       data: updatedContact,
     });
